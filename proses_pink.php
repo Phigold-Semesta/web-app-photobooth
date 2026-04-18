@@ -11,23 +11,23 @@ if (isset($_POST['image_data'])) {
 
     $source = imagecreatefromstring($data);
     if ($source !== false) {
-        // Nama file menggunakan prefix Pink untuk mempermudah manajemen galeri
+        // Nama file menggunakan prefix Pink
         $filename = "Strip_Pink_" . date("Ymd_His") . ".png";
         $filepath = "uploads/" . $filename;
 
-        // Pertahankan kualitas transparansi dan warna pink yang lembut
+        // Mengatur agar transparansi dan warna pink tetap akurat
         imagealphablending($source, true);
         imagesavealpha($source, true);
 
         if (imagepng($source, $filepath)) {
             imagedestroy($source);
-            // Redirect ke galeri dengan status sukses dan tema pink
+            // Redirect ke galeri dengan parameter sukses bertema pink
             header("Location: galeri.php?status=success&theme=pink");
             exit();
         }
     }
 }
 
-// Jika gagal atau akses langsung, kembali ke beranda photobooth
+// Kembali ke beranda jika akses ilegal
 header("Location: index.php");
 ?>

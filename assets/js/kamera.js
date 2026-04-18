@@ -1,6 +1,5 @@
 /**
  * PinkyPromise Photobooth - Final Photo Engine 
- * Experience: Fun, Modern, and Luxurious
  */
 
 const video = document.getElementById('video');
@@ -12,38 +11,23 @@ const statusText = document.getElementById('status-text');
 
 let photos = []; 
 
-// 1. Akses Kamera Pengunjung
+// 1. Akses Kamera
 navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-    .then(stream => { 
-        video.srcObject = stream; 
-        // Munculkan status setelah kamera aktif
-        if(statusText) {
-            statusText.style.display = "block";
-            statusText.innerText = "Kamera sudah siap! Yuk, ambil posisi terbaikmu ✨";
-        }
-    })
-    .catch(err => { 
-        console.error(err);
-        alert("Ups! Kamera tidak bisa diakses. Pastikan izin kamera sudah diberikan ya!"); 
-    });
+    .then(stream => { video.srcObject = stream; })
+    .catch(err => { alert("Ups! Kamera tidak bisa diakses."); });
 
-// 2. Fungsi Utama Sesi Foto (The Magic Happens Here)
+// 2. Sesi Foto
 snap.addEventListener('click', async () => {
-    // Ambil nuansa filter yang dipilih pengunjung
     const filterInput = document.getElementById('filter_used');
     const filterUsed = filterInput ? filterInput.value.trim() : 'soft';
     
-    // Disable tombol agar tidak klik dua kali saat proses
     snap.disabled = true; 
-    snap.innerHTML = 'PROSES FOTO... <i class="fas fa-spinner fa-spin ms-2"></i>';
+    snap.innerHTML = 'PROSES... <i class="fas fa-spinner fa-spin ms-2"></i>';
     photos = []; 
     
-    // Looping Pengambilan 4 Foto Seru
     for (let i = 1; i <= 4; i++) {
-        // Teks instruksi yang lebih asik (Bukan gaya SOWAN)
-        statusText.innerText = `Siap-siap ya... Foto ke-${i} dalam hitungan mundur!`;
-        statusText.classList.add('animate__pulse');
-        
+        statusText.style.display = "block";
+        statusText.innerText = `Foto ke-${i} dalam hitungan mundur...`;
         await new Promise(r => setTimeout(r, 2000));
         statusText.innerText = `3... 2... 1... POSE! 📸`;
         
@@ -51,7 +35,6 @@ snap.addEventListener('click', async () => {
         canvas.height = video.videoHeight;
         const context = canvas.getContext('2d');
         
-        // Mirroring Fix (Agar pengunjung merasa seperti bercermin)
         context.save();
         context.scale(-1, 1);
         context.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
@@ -60,73 +43,63 @@ snap.addEventListener('click', async () => {
         const dataURL = canvas.toDataURL('image/png');
         photos.push(dataURL);
         
-        // Update Preview di Slot Kecil
         const pBox = document.getElementById(`p${i}`);
-        if(pBox) {
-            pBox.innerHTML = `<img src="${dataURL}" width="100%" class="rounded animate__animated animate__zoomIn">`;
-            pBox.style.border = "3px solid #db7093";
-        }
-        
+        if(pBox) pBox.innerHTML = `<img src="${dataURL}" width="100%" class="rounded animate__animated animate__zoomIn">`;
         await new Promise(r => setTimeout(r, 1000));
     }
 
-    statusText.innerText = "Momen indahmu sedang disatukan... Tunggu sebentar ya! ✨";
+    statusText.innerText = "Menyusun memori indahmu... ✨";
 
-    // 3. Proses Pembuatan Photo Strip (Canvas Gabungan Mewah)
+    // 3. Pembuatan Photo Strip
     const stripCanvas = document.createElement('canvas');
     const ctx = stripCanvas.getContext('2d');
     const imgW = video.videoWidth;
     const imgH = video.videoHeight;
     const padding = 40; 
-    const gap = 25;
+    const gap = 30;
 
-    // Menghitung tinggi canvas agar muat 4 foto + area branding di bawah
     stripCanvas.width = imgW + (padding * 2);
-    stripCanvas.height = (imgH * 4) + (gap * 3) + (padding * 2) + 120;
+    stripCanvas.height = (imgH * 4) + (gap * 3) + (padding * 2) + 130;
 
-    // --- LOGIKA WARNA & BRANDING PHOTOBOOTH ---
+    // --- LOGIKA WARNA TEMA ---
     let bgColor, textColor, brandText;
-
-    switch (filterUsed) {
-        case 'mahogany':
-            bgColor = "#4E2A1E";    // Cokelat Mahogany Mewah
-            textColor = "#FFFFFF";  // Putih Bersih
-            brandText = "✨ PinkyPromise Mahogany Strip ✨";
-            break;
-        case 'vintage':
-            bgColor = "#ADD8E6";    // Blue Vintage Adem
-            textColor = "#4682B4";  // Blue Steel
-            brandText = "📸 PinkyPromise Vintage Blue 📸";
-            break;
-        case 'soft':
-        default:
-            bgColor = "#FFB6C1";    // Pink Rose Khas
-            textColor = "#DB7093";  // Pink Tua Mewah
-            brandText = "💖 PinkyPromise Sweet Memories 💖";
-            break;
+    if (filterUsed === 'mahogany') {
+        bgColor = "#4E2A1E"; 
+        textColor = "#FFFFFF";
+        brandText = "✨ PinkyPromise Mahogany Strip ✨";
+    } else if (filterUsed === 'vintage') {
+        bgColor = "#ADD8E6"; 
+        textColor = "#4682B4";
+        brandText = "📸 PinkyPromise Vintage Blue 📸";
+    } else {
+        bgColor = "#FFB6C1"; 
+        textColor = "#DB7093";
+        brandText = "💖 PinkyPromise Sweet Pink 💖";
     }
 
-    // Gambar Background Strip sesuai tema pilihan pengunjung
+    // TAHAP 1: Cat Background Dulu
     ctx.fillStyle = bgColor; 
     ctx.fillRect(0, 0, stripCanvas.width, stripCanvas.height);
 
-    // Susun 4 foto secara vertikal
+    // TAHAP 2: Tempel Foto
     for (let i = 0; i < photos.length; i++) {
         const img = new Image();
         img.src = photos[i];
         await new Promise(r => img.onload = r);
-        
         const posY = padding + (i * (imgH + gap));
+        
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(padding, posY, imgW, imgH);
         ctx.drawImage(img, padding, posY, imgW, imgH);
     }
 
-    // 4. Tambahkan Identitas PinkyPromise di Footer Strip
+    // TAHAP 3: Branding
     ctx.fillStyle = textColor;
-    ctx.font = "bold 38px Arial"; // Ukuran font sedikit diperbesar agar mewah
+    ctx.font = "bold 38px Arial"; 
     ctx.textAlign = "center";
-    ctx.fillText(brandText, stripCanvas.width / 2, stripCanvas.height - 50);
+    ctx.fillText(brandText, stripCanvas.width / 2, stripCanvas.height - 55);
 
-    // 5. Finalize: Kirim Data ke Server
     imageDataInput.value = stripCanvas.toDataURL('image/png');
     photoForm.submit();
 });

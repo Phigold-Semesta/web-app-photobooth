@@ -15,12 +15,13 @@ if (isset($_POST['image_data'])) {
         $filename = "Strip_Blue_" . date("Ymd_His") . ".png";
         $filepath = "uploads/" . $filename;
 
+        // Penting: Memastikan warna biru vintage tidak pudar saat di-save
         imagealphablending($source, true);
         imagesavealpha($source, true);
 
         if (imagepng($source, $filepath)) {
             imagedestroy($source);
-            // Redirect ke galeri dengan tema blue
+            // Redirect ke galeri dengan parameter sukses bertema blue
             header("Location: galeri.php?status=success&theme=blue");
             exit();
         }
