@@ -1,5 +1,7 @@
 <?php include 'includes/header.php'; ?>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <style>
     /* Styling Kartu Galeri */
     .card-romantis {
@@ -32,14 +34,13 @@
     .img-container::-webkit-scrollbar { width: 5px; }
     .img-container::-webkit-scrollbar-thumb { background: #ffb6c1; border-radius: 10px; }
 
-    /* Custom Dropdown & Button Styling */
+    /* Custom Button & Dropdown */
     .btn-pink { background: #db7093; color: white; border-radius: 50px; border: none; }
     .btn-pink:hover { background: #c25e80; color: white; }
     
     .btn-outline-pink { border: 2px solid #db7093; color: #db7093; font-weight: bold; }
     .btn-outline-pink:hover { background: #db7093; color: white; }
 
-    /* REVISI: Animasi Tombol Hapus yang Lebih Kalem & Mewah */
     .btn-delete {
         background: rgba(255, 255, 255, 0.9);
         color: #dc3545;
@@ -55,14 +56,14 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        text-decoration: none;
+        cursor: pointer;
         box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
     .btn-delete:hover {
         background: #dc3545;
         color: white;
-        transform: scale(1.15); /* Hanya membesar sedikit, tidak berputar */
+        transform: scale(1.15);
         box-shadow: 0 6px 15px rgba(220, 53, 69, 0.3);
     }
 </style>
@@ -79,24 +80,9 @@
             </button>
             <ul class="dropdown-menu dropdown-menu-center animate__animated animate__fadeIn">
                 <li><h6 class="dropdown-header">Pilih Suasana Baru:</h6></li>
-                <li>
-                    <form action="ambil-foto.php" method="POST">
-                        <input type="hidden" name="filter" value="soft">
-                        <button type="submit" class="dropdown-item fw-bold text-pink" style="color:#db7093;">💖 Sweet Pink</button>
-                    </form>
-                </li>
-                <li>
-                    <form action="ambil-foto.php" method="POST">
-                        <input type="hidden" name="filter" value="vintage">
-                        <button type="submit" class="dropdown-item fw-bold text-primary">📸 Vintage Blue</button>
-                    </form>
-                </li>
-                <li>
-                    <form action="ambil-foto.php" method="POST">
-                        <input type="hidden" name="filter" value="mahogany">
-                        <button type="submit" class="dropdown-item fw-bold" style="color:#4e2a1e;">✨ Mahogany Luxury</button>
-                    </form>
-                </li>
+                <li><form action="ambil-foto.php" method="POST"><input type="hidden" name="filter" value="soft"><button type="submit" class="dropdown-item fw-bold text-pink">💖 Sweet Pink</button></form></li>
+                <li><form action="ambil-foto.php" method="POST"><input type="hidden" name="filter" value="vintage"><button type="submit" class="dropdown-item fw-bold text-primary">📸 Vintage Blue</button></form></li>
+                <li><form action="ambil-foto.php" method="POST"><input type="hidden" name="filter" value="mahogany"><button type="submit" class="dropdown-item fw-bold" style="color:#4e2a1e;">✨ Mahogany Luxury</button></form></li>
             </ul>
         </div>
     </div>
@@ -117,12 +103,9 @@
                 <div class="col-lg-3 col-md-4 col-sm-6 mb-4 animate__animated animate__zoomIn">
                     <div class="card card-romantis shadow-sm">
                         
-                        <a href="hapus-foto.php?file=<?= $fileName ?>" 
-                           class="btn-delete" 
-                           onclick="return confirm('Hapus foto kenangan ini? Tindakan ini tidak bisa dibatalkan.')" 
-                           title="Hapus Foto">
+                        <div class="btn-delete" onclick="konfirmasiHapus('<?= $fileName ?>')" title="Hapus Foto">
                             <i class="fas fa-trash-alt"></i>
-                        </a>
+                        </div>
 
                         <div class="img-container">
                             <img src="<?php echo $image; ?>" class="img-strip" alt="Pinky Strip">
@@ -141,17 +124,45 @@
                 <?php
             }
         } else {
-            echo '
-            <div class="col-12 text-center py-5">
-                <div class="card p-5 bg-white shadow-sm border-0" style="border-radius: 30px;">
-                    <h3 class="text-muted">Oops! Galeri masih kosong.</h3>
-                    <p>Jangan biarkan harimu berlalu tanpa kenangan manis!</p>
-                    <div class="display-1">📸</div>
-                </div>
-            </div>';
+            echo '<div class="col-12 text-center py-5"><h3>Oops! Galeri masih kosong.</h3></div>';
         }
         ?>
     </div>
 </div>
+
+<script>
+    function konfirmasiHapus(fileName) {
+        Swal.fire({
+            title: 'Hapus Foto?',
+            text: "Kenangan ini akan hilang selamanya, bos!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#db7093',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya, Hapus saja!',
+            cancelButtonText: 'Batal',
+            border: 'none',
+            borderRadius: '20px'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Redirect ke file PHP penghapus
+                window.location.href = 'hapus-foto.php?file=' + fileName;
+            }
+        })
+    }
+
+    // Cek jika ada status sukses dari hapus-foto.php
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('status') === 'deleted') {
+        Swal.fire({
+            title: 'Terhapus!',
+            text: 'Foto telah berhasil dihapus dari galeri.',
+            icon: 'success',
+            confirmButtonColor: '#db7093'
+        });
+        // Bersihkan URL agar tidak muncul alert terus saat refresh
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+</script>
 
 <?php include 'includes/footer.php'; ?>
