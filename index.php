@@ -1,72 +1,114 @@
 <?php include 'includes/header.php'; ?>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 
-<div class="container-fluid d-flex align-items-center justify-content-center p-0" style="min-height: 90vh; overflow: hidden; background: linear-gradient(135deg, #fff0f5 0%, #ffd1dc 50%, #ffc0cb 100%);">
+<style>
+    /* Background dinamis yang mewah */
+    .main-bg {
+        min-height: 90vh;
+        background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .btn-pink-mewah {
+        background: linear-gradient(45deg, #db7093, #ffb6c1);
+        color: white;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-pink-mewah:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(219, 112, 147, 0.4);
+        color: white;
+    }
+
+    .icon-strip-pilar i {
+        display: block;
+        font-size: 2rem;
+        margin: 30px 0;
+        color: #db7093;
+        opacity: 0.6;
+    }
+
+    .floating {
+        animation: floating 3s ease-in-out infinite;
+    }
+
+    @keyframes floating {
+        0% { transform: translate(0, 0px); }
+        50% { transform: translate(0, -15px); }
+        100% { transform: translate(0, 0px); }
+    }
+</style>
+
+<div class="container-fluid main-bg p-0">
     
     <div class="potobooth-container position-relative d-flex align-items-center justify-content-center" style="width: 100%; max-width: 1200px;">
 
-        <div class="icon-strip-pilar strip-left floating-strip animate__animated animate__fadeInLeft d-none d-xl-flex">
-            <i class="fas fa-camera-retro"></i>
-            <i class="fas fa-heart"></i>
-            <i class="fas fa-magic"></i>
-            <i class="fas fa-sparkles"></i>
+        <div class="icon-strip-pilar strip-left d-none d-xl-flex flex-column position-absolute start-0">
+            <i class="fas fa-camera-retro animate__animated animate__fadeInLeft"></i>
+            <i class="fas fa-gem animate__animated animate__fadeInLeft animate__delay-1s"></i>
+            <i class="fas fa-magic animate__animated animate__fadeInLeft animate__delay-2s"></i>
+            <i class="fas fa-palette animate__animated animate__fadeInLeft animate__delay-3s"></i>
         </div>
 
         <div class="col-md-8 col-lg-6 col-xl-5" style="z-index: 10; position: relative;">
-            <div class="card card-romantis p-4 animate__animated animate__fadeIn floating shadow-lg border-0" style="border-radius: 30px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(15px);">
+            <div class="card p-4 animate__animated animate__fadeIn floating shadow-lg border-0" style="border-radius: 30px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(15px);">
                 <div class="card-body text-center">
                     
-                   
-
-                    <h1 class="fw-bold text-pink animate__animated animate__pulse animate__infinite animate__slower mb-1" style="letter-spacing: 1px; font-size: 2.5rem; color: #db7093;">
+                    <h1 class="fw-bold animate__animated animate__pulse animate__infinite animate__slower mb-1" style="letter-spacing: 1px; font-size: 2.5rem; color: #db7093;">
                         PinkyPromise
                     </h1>
-                    <h4 class="fw-light mb-4" style="color: #db7093;">Booth 🌸</h4>
-                    <p class="text-muted mb-4 small">Abadikan momen manismu dalam jepretan ikonik.</p>
+                    <h4 class="fw-light mb-4" style="color: #4E2A1E;">Photobooth📸</h4>
+                    <p class="text-muted mb-4 small">Pilih nuansa favoritmu dan abadikan momen terbaik hari ini.</p>
                     
-                    <form action="ambil-foto.php" method="POST" class="animate__animated animate__fadeInUp animate__delay-1s">
+                    <form action="ambil-foto.php" method="POST" class="animate__animated animate__fadeInUp">
                         
                         <div class="mb-4 text-start">
                             <label class="form-label fw-bold small text-secondary">
-                                <i class="fas fa-heart me-2" style="color: #db7093;"></i>NAMA KAMU
+                                <i class="fas fa-user-tag me-2" style="color: #db7093;"></i>NAMA TAMU
                             </label>
                             <input type="text" name="nama_tamu" class="form-control form-control-lg shadow-sm border-0 rounded-pill" 
-                                style="background: rgba(255, 255, 255, 0.9); padding-left: 20px;"
-                                placeholder="Tulis namamu di sini..." required>
+                                style="background: #f8f9fa; padding-left: 20px;"
+                                placeholder="Masukkan nama Anda..." required>
                         </div>
                         
                         <div class="mb-4 text-start">
                             <label class="form-label fw-bold small text-secondary">
-                                <i class="fas fa-magic me-2" style="color: #db7093;"></i>PILIH NUANSA
+                                <i class="fas fa-fill-drip me-2" style="color: #db7093;"></i>PILIH TEMA SUASANA
                             </label>
                             <select name="filter" class="form-select form-select-lg shadow-sm border-0 rounded-pill"
-                                style="background: rgba(255, 255, 255, 0.9); padding-left: 20px;">
+                                style="background: #f8f9fa; padding-left: 20px;">
                                 <option value="soft">🌸 Soft Pink (Romantic)</option>
-                                <option value="vintage">🎞️ Vintage Rose (Classic)</option>
-                                <option value="bright">✨ Bright Sparkle (Glowing)</option>
+                                <option value="vintage">🧊 Blue Vintage (Cool & Calm)</option>
+                                <option value="mahogany">🪵 Mahogany Luxury (Bold & Classy)</option>
                             </select>
                         </div>
                         
-                        <button type="submit" class="btn btn-pink-mewah btn-lg w-100 shadow-lg rounded-pill animate__animated animate__pulse animate__infinite animate__slower">
-                            MULAI SESI FOTO <i class="fas fa-camera-retro ms-2"></i>
+                        <button type="submit" class="btn btn-pink-mewah btn-lg w-100 shadow-lg rounded-pill">
+                            MULAI SESI FOTO <i class="fas fa-arrow-right ms-2"></i>
                         </button>
                     </form>
 
                     <div class="mt-4">
-                        <a href="galeri.php" class="text-decoration-none small fw-bold hover-underline" style="color: #db7093;">
-                            <i class="fas fa-images me-1"></i> LIHAT GALERI FOTO
+                        <a href="galeri.php" class="text-decoration-none small fw-bold" style="color: #db7093;">
+                            <i class="fas fa-images me-1"></i> BUKA GALERI HASIL FOTO
                         </a>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="icon-strip-pilar strip-right floating-strip animate__animated animate__fadeInRight d-none d-xl-flex">
-            <i class="fas fa-grin-hearts"></i>
-            <i class="fas fa-star"></i>
-            <i class="fas fa-film"></i>
-            <i class="fas fa-smile-beam"></i>
+        <div class="icon-strip-pilar strip-right d-none d-xl-flex flex-column position-absolute end-0">
+            <i class="fas fa-grin-stars animate__animated animate__fadeInRight"></i>
+            <i class="fas fa-crown animate__animated animate__fadeInRight animate__delay-1s"></i>
+            <i class="fas fa-film animate__animated animate__fadeInRight animate__delay-2s"></i>
+            <i class="fas fa-heart animate__animated animate__fadeInRight animate__delay-3s"></i>
         </div>
 
     </div>
