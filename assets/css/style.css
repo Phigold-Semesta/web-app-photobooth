@@ -1,0 +1,117 @@
+/* Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+:root {
+    --pink-light: #ffd1dc;
+    --pink-medium: #ffb6c1;
+    --pink-dark: #db7093;
+    --pink-hot: #ff69b4;
+    --glass-white: rgba(255, 255, 255, 0.85);
+}
+
+body {
+    background: linear-gradient(135deg, #fff0f5 0%, #ffd1dc 50%, #ffc0cb 100%);
+    font-family: 'Poppins', sans-serif;
+    color: #4a4a4a;
+    min-height: 100vh;
+    margin: 0;
+    overflow-x: hidden;
+}
+
+/* --- Layout Container --- */
+.potobooth-container {
+    position: relative;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* --- Styling Pilar Icon (Kiri & Kanan) --- */
+.icon-strip-pilar {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 40px; /* Jarak antar icon */
+    z-index: 1;
+    font-size: 3.5rem; /* Ukuran icon */
+    color: var(--pink-dark);
+    opacity: 0.5;
+    text-shadow: 0 10px 20px rgba(219, 112, 147, 0.3);
+}
+
+.strip-left {
+    left: -100px;
+    align-items: flex-end;
+}
+
+.strip-right {
+    right: -100px;
+    align-items: flex-start;
+}
+
+/* Efek Rotasi Icon agar tidak kaku */
+.icon-strip-pilar i:nth-child(odd) { transform: rotate(-15deg); }
+.icon-strip-pilar i:nth-child(even) { transform: rotate(15deg); }
+
+/* Animasi Floating Lambat */
+.floating-strip {
+    animation: floatingStripIcon 6s ease-in-out infinite;
+}
+
+@keyframes floatingStripIcon {
+    0%, 100% { transform: translateY(-50%) scale(1); }
+    50% { transform: translateY(-55%) scale(1.1); }
+}
+
+/* --- Card Glassmorphism --- */
+.card-romantis {
+    background: var(--glass-white);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 30px;
+    box-shadow: 0 20px 40px rgba(255, 105, 180, 0.25);
+    z-index: 10;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.card-romantis:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 30px 60px rgba(255, 105, 180, 0.35);
+}
+
+/* --- Tombol Interaktif --- */
+.btn-pink {
+    background: linear-gradient(45deg, var(--pink-dark), var(--pink-hot));
+    color: white !important;
+    border-radius: 50px;
+    padding: 12px 35px;
+    border: none;
+    font-weight: 600;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(219, 112, 147, 0.4);
+}
+
+.btn-pink:hover {
+    transform: scale(1.05) translateY(-3px);
+    box-shadow: 0 10px 25px rgba(219, 112, 147, 0.6);
+}
+
+/* --- Responsivitas --- */
+@media (max-width: 1199px) {
+    .icon-strip-pilar {
+        display: none; /* Sembunyikan icon di layar kecil */
+    }
+}
+
+@media (max-width: 768px) {
+    .card-romantis {
+        margin: 15px;
+        padding: 20px !important;
+    }
+}
