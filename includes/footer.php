@@ -1,4 +1,4 @@
-<footer class="text-center mt-5 pb-5 animate__animated animate__fadeInUp" style="background: linear-gradient(to bottom, transparent, #fff0f5);">
+<footer class="text-center mt-5 pb-5 animate__animated animate__fadeInUp" style="background: linear-gradient(to bottom, transparent, #FAC0D4);">
         <div class="container"> <hr class="mx-auto mb-4" style="width: 60px; border: 2px solid #db7093; border-radius: 10px; opacity: 0.6;">
             
             <div class="footer-content"> <p class="mb-1" style="color: #4e4e4e; font-size: 0.95rem;">

@@ -11,7 +11,7 @@ include 'includes/header.php';
        menggunakan gradasi warna krem ke pink lembut, dan memosisikan konten tepat di tengah */
     .main-bg {
         min-height: 90vh; /* Tinggi minimal 90% dari tinggi layar browser */
-        background: linear-gradient(135deg, #fdfcfb 0%, #F9CDD4 100%); /* Warna gradasi diagonal */
+        background: linear-gradient(135deg, #fdfcfb 0%, rgba(255, 255, 255, 0.95) 100%); /* Warna gradasi diagonal */
         display: flex; /* Mengaktifkan mode flexbox untuk perataan */
         align-items: center; /* Memosisikan konten secara vertikal di tengah */
         justify-content: center; /* Memosisikan konten secara horizontal di tengah */
