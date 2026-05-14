@@ -7,7 +7,7 @@
     /* Background dinamis yang mewah & estetik */
     .main-bg {
         min-height: 90vh;
-        background: linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);
+        background: linear-gradient(135deg, #fdfcfb 0%, #F9CDD4 100%);
         display: flex;
         align-items: center;
         justify-content: center;
