@@ -1,46 +1,54 @@
-<?php include 'includes/header.php'; ?>
+<?php 
+// Menyisipkan file header untuk bagian navigasi atas dan meta data
+include 'includes/header.php'; 
+?>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
-    /* Styling Kartu Galeri */
+    /* Styling Kartu Galeri: Mengatur tampilan kartu foto agar terlihat romantis dan elegan */
     .card-romantis {
-        transition: all 0.3s ease;
-        border: 2px solid #ffb6c1;
-        border-radius: 20px;
-        overflow: hidden;
-        background: #fff;
-        position: relative;
+        transition: all 0.3s ease; /* Memberikan efek transisi halus saat kartu berinteraksi */
+        border: 2px solid #ffb6c1; /* Memberikan garis tepi berwarna pink muda */
+        border-radius: 20px; /* Membuat sudut kartu melengkung halus */
+        overflow: hidden; /* Memastikan konten di dalam tidak keluar dari area lengkungan kartu */
+        background: #fff; /* Warna latar belakang kartu putih bersih */
+        position: relative; /* Dasar posisi untuk meletakkan tombol hapus secara absolut */
     }
 
+    /* Efek saat kursor berada di atas kartu: kartu naik sedikit ke atas dan muncul bayangan lembut */
     .card-romantis:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 15px 30px rgba(219, 112, 147, 0.2);
+        transform: translateY(-10px); 
+        box-shadow: 0 15px 30px rgba(219, 112, 147, 0.2); 
     }
 
+    /* Wadah Gambar: Mengatur tinggi tetap dan memberikan fungsi scroll jika gambar terlalu panjang (strip) */
     .img-container {
         height: 450px; 
-        overflow-y: auto;
-        background-color: #f8f9fa;
+        overflow-y: auto; /* Memungkinkan scroll vertikal untuk melihat seluruh strip foto */
+        background-color: #f8f9fa; /* Warna latar belakang abu-abu sangat muda */
     }
 
+    /* Pengaturan Gambar Strip: Memastikan gambar memenuhi lebar wadah secara otomatis */
     .img-strip {
         width: 100%;
         height: auto;
         display: block;
     }
 
-    /* Custom Scrollbar */
+    /* Kustomisasi Bar Scroll: Mengubah tampilan scroll agar serasi dengan tema pink */
     .img-container::-webkit-scrollbar { width: 5px; }
     .img-container::-webkit-scrollbar-thumb { background: #ffb6c1; border-radius: 10px; }
 
-    /* Custom Button & Dropdown */
+    /* Tombol Pink Utama: Digunakan untuk tombol "Ambil Foto Lagi" */
     .btn-pink { background: #db7093; color: white; border-radius: 50px; border: none; }
     .btn-pink:hover { background: #c25e80; color: white; }
     
+    /* Tombol Outline Pink: Digunakan untuk tombol "Simpan Foto" */
     .btn-outline-pink { border: 2px solid #db7093; color: #db7093; font-weight: bold; }
     .btn-outline-pink:hover { background: #db7093; color: white; }
 
+    /* Tombol Hapus: Lingkaran kecil di pojok kanan atas foto dengan efek transparan */
     .btn-delete {
         background: rgba(255, 255, 255, 0.9);
         color: #dc3545;
@@ -60,6 +68,7 @@
         box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
+    /* Efek Hover Tombol Hapus: Warna menjadi merah solid dan membesar sedikit */
     .btn-delete:hover {
         background: #dc3545;
         color: white;
@@ -89,16 +98,28 @@
 
     <div class="row">
         <?php
+        // Menentukan folder tempat penyimpanan foto
         $dir = "uploads/";
+        // Membuat folder jika belum ada secara otomatis
         if (!is_dir($dir)) { mkdir($dir, 0777, true); }
 
+        // Mengambil semua file gambar dengan ekstensi .png dalam folder uploads
         $images = glob($dir . "*.png");
+        
         if ($images) {
-            array_multisort(array_map('filemtime', $images), SORT_DESC, $images);
+            /** * PERBAIKAN ERROR: 
+             * Kita memisahkan pengambilan waktu modifikasi file (filemtime) ke dalam array terpisah.
+             * Hal ini dilakukan untuk menghilangkan peringatan error di VS Code dan membuat sorting lebih stabil.
+             */
+            $timestamps = array_map('filemtime', $images); 
 
+            // Melakukan pengurutan: Foto terbaru akan berada di posisi paling atas/depan (SORT_DESC)
+            array_multisort($timestamps, SORT_DESC, $images);
+
+            // Melakukan perulangan untuk setiap file gambar yang ditemukan
             foreach ($images as $image) {
-                $fileName = basename($image);
-                $uploadTime = date("d M Y | H:i", filemtime($image));
+                $fileName = basename($image); // Mendapatkan nama file saja tanpa path folder
+                $uploadTime = date("d M Y | H:i", filemtime($image)); // Mengonversi waktu upload ke format tanggal yang mudah dibaca
                 ?>
                 <div class="col-lg-3 col-md-4 col-sm-6 mb-4 animate__animated animate__zoomIn">
                     <div class="card card-romantis shadow-sm">
@@ -124,6 +145,7 @@
                 <?php
             }
         } else {
+            // Tampilan jika folder uploads masih kosong atau tidak ada file .png
             echo '<div class="col-12 text-center py-5"><h3>Oops! Galeri masih kosong.</h3></div>';
         }
         ?>
@@ -131,27 +153,31 @@
 </div>
 
 <script>
+    /**
+     * Fungsi konfirmasiHapus: Menampilkan popup peringatan sebelum benar-benar menghapus file
+     */
     function konfirmasiHapus(fileName) {
         Swal.fire({
             title: 'Hapus Foto?',
             text: "Kenangan ini akan hilang selamanya, bos!",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#db7093',
+            confirmButtonColor: '#db7093', // Warna tombol konfirmasi disesuaikan dengan tema pink
             cancelButtonColor: '#6c757d',
             confirmButtonText: 'Ya, Hapus saja!',
             cancelButtonText: 'Batal',
-            border: 'none',
             borderRadius: '20px'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Redirect ke file PHP penghapus
+                // Jika user klik Ya, arahkan browser ke file penghapus dengan parameter nama file
                 window.location.href = 'hapus-foto.php?file=' + fileName;
             }
         })
     }
 
-    // Cek jika ada status sukses dari hapus-foto.php
+    /**
+     * Logika Feedback: Mengecek apakah ada parameter 'status=deleted' di URL setelah redirect dari hapus-foto.php
+     */
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('status') === 'deleted') {
         Swal.fire({
@@ -160,9 +186,12 @@
             icon: 'success',
             confirmButtonColor: '#db7093'
         });
-        // Bersihkan URL agar tidak muncul alert terus saat refresh
+        // Membersihkan URL agar pesan sukses tidak muncul berulang kali saat halaman di-refresh
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 </script>
 
-<?php include 'includes/footer.php'; ?>
+<?php 
+// Menyisipkan file footer untuk menutup tag HTML dan menyisipkan script Bootstrap
+include 'includes/footer.php'; 
+?>
