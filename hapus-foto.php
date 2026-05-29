@@ -4,30 +4,35 @@
  * File ini berfungsi sebagai mesin pemroses penghapusan file gambar dari server.
  */
 
-// Mengecek apakah ada parameter 'file' yang dikirimkan melalui URL (metode GET)
-if (isset($_GET['file'])) {
-    
-    /**
-     * Mengambil nama file dari parameter URL.
-     * Fungsi basename() sangat penting untuk keamanan guna mencegah "Path Traversal",
-     * yaitu upaya user nakal yang mencoba menghapus file di luar folder 'uploads'.
-     */
-    $fileName = basename($_GET['file']); 
-    
-    // Menentukan jalur lengkap (path) lokasi file yang akan dihapus di dalam server
-    $filePath = "uploads/" . $fileName;
+// Menyisipkan file koneksi database Laragon pusat untuk memproses penghapusan data
+include 'includes/koneksi.php';
 
+// Mengecek apakah ada parameter 'id' yang dikirimkan melalui URL (metode GET)
+if (isset($_GET['id'])) {
+    
     /**
-     * Melakukan validasi apakah file yang diminta memang benar-benar ada di folder uploads.
-     * Ini mencegah error sistem jika mencoba menghapus file yang sudah tidak ada.
+     * Mengambil ID data dari parameter URL.
+     * Fungsi mysqli_real_escape_string() sangat penting untuk keamanan guna mencegah "SQL Injection",
+     * yaitu upaya user nakal yang mencoba merusak atau memanipulasi struktur query database.
      */
-    if (file_exists($filePath)) {
+    $idUser = mysqli_real_escape_string($koneksi, $_GET['id']); 
+    
+    /**
+     * Melakukan validasi mengecek apakah data yang diminta memang benar-benar ada di database.
+     * Ini mencegah error sistem jika mencoba menghapus data yang sudah tidak ada.
+     */
+    $checkQuery = "SELECT id_user FROM photos WHERE id_user = '$idUser'";
+    $checkResult = mysqli_query($koneksi, $checkQuery);
+
+    if ($checkResult && mysqli_num_rows($checkResult) > 0) {
         
         /**
-         * Fungsi unlink() adalah fungsi bawaan PHP untuk menghapus file secara permanen dari sistem penyimpanan.
+         * Perintah DELETE FROM adalah fungsi bawaan SQL untuk menghapus baris data secara permanen dari sistem penyimpanan tabel database.
          * Jika proses penghapusan berhasil, maka blok kode di bawahnya akan dijalankan.
          */
-        if (unlink($filePath)) {
+        $queryDelete = "DELETE FROM photos WHERE id_user = '$idUser'";
+        
+        if (mysqli_query($koneksi, $queryDelete)) {
             
             /**
              * Jika berhasil dihapus, arahkan kembali (redirect) user ke halaman galeri.php.
@@ -43,10 +48,11 @@ if (isset($_GET['file'])) {
 
 /**
  * JIKA TERJADI KEGAGALAN:
- * Jika parameter 'file' tidak ada, file tidak ditemukan, atau gagal dihapus,
+ * Jika parameter 'id' tidak ada, data tidak ditemukan, atau gagal dihapus,
  * maka user akan dilempar kembali ke galeri dengan status error.
  */
 header("Location: galeri.php?status=error");
 
 // Memastikan script berhenti sepenuhnya setelah perintah redirect
 exit();
+?>

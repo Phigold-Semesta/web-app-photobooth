@@ -4,8 +4,14 @@
  * File ini berfungsi untuk mengolah data gambar mentah dari kamera dan menyimpannya sebagai file PNG.
  */
 
+// Menyisipkan file koneksi database Laragon pusat untuk menyimpan data biner gambar
+include 'includes/koneksi.php';
+
 // Mengecek apakah ada data gambar (image_data) yang dikirimkan melalui metode POST dari halaman kamera
 if (isset($_POST['image_data'])) {
+    
+    // Menangkap nama tamu dari form input, disanitasi agar aman dari SQL Injection
+    $nama_user = isset($_POST['nama_tamu']) ? mysqli_real_escape_string($koneksi, $_POST['nama_tamu']) : 'User Misterius';
     
     // Mengambil data string Base64 yang dikirimkan oleh sistem kamera JavaScript
     $img = $_POST['image_data'];
@@ -29,15 +35,6 @@ if (isset($_POST['image_data'])) {
     if ($source !== false) {
         
         /**
-         * Menentukan nama file secara otomatis dengan awalan 'Strip_Blue_' diikuti oleh tanggal dan waktu pengambilan.
-         * Format: TahunBulanTanggal_JamMenitDetik (Contoh: Strip_Blue_20260514_150000.png)
-         */
-        $filename = "Strip_Blue_" . date("Ymd_His") . ".png";
-        
-        // Menentukan lokasi folder penyimpanan yaitu di dalam folder 'uploads/'
-        $filepath = "uploads/" . $filename;
-
-        /**
          * imagealphablending: Mengatur mode pencampuran warna agar elemen transparan dapat digabungkan dengan benar.
          * Ini penting agar filter vintage yang memiliki transparansi tidak terlihat rusak.
          */
@@ -50,10 +47,31 @@ if (isset($_POST['image_data'])) {
         imagesavealpha($source, true);
 
         /**
-         * Fungsi imagepng() digunakan untuk menulis/menyimpan sumber daya gambar dari memori ke dalam file fisik di folder uploads.
-         * Jika berhasil disimpan, maka blok kode di bawahnya akan dijalankan.
+         * PERBAIKAN & PENYESUAIAN DIREK DATABASE:
+         * Menggunakan output buffering untuk menangkap data biner gambar langsung dari memori 
+         * tanpa harus membuat atau menulis file fisik ke dalam folder uploads/ lagi.
          */
-        if (imagepng($source, $filepath)) {
+        ob_start(); // Membuka buffer memori internal system
+        imagepng($source); // Mengalirkan data gambar PNG ke dalam buffer memori
+        $gambar_biner = ob_get_clean(); // Mengambil isi biner gambar dari buffer lalu membersihkannya
+        
+        // Mengamankan data biner mentah gambar agar siap dimasukkan ke dalam query SQL
+        $gambar_aman = mysqli_real_escape_string($koneksi, $gambar_biner);
+        
+        // Menentukan nama tema yang digunakan secara konsisten
+        $tema = "Blue Vintage";
+
+        /**
+         * Query INSERT digunakan untuk menjebloskan data user beserta fisik gambar murni (LONGBLOB) 
+         * secara langsung ke tabel 'photos' di database db_photobooth Laragon.
+         */
+        $query = "INSERT INTO photos (nama_user, file_gambar, tema) VALUES ('$nama_user', '$gambar_aman', '$tema')";
+        
+        // Memastikan query sql berhasil dieksekusi ke database Laragon
+        if (mysqli_query($koneksi, $query)) {
+            
+            // Menghapus resource gambar dari memori RAM server agar menghemat resource laptop bos
+            imagedestroy($source);
                 
             /**
              * Redirect atau mengarahkan user kembali ke halaman galeri dengan status sukses.
@@ -63,6 +81,9 @@ if (isset($_POST['image_data'])) {
             
             // Menghentikan eksekusi script agar proses pengalihan halaman berjalan lancar
             exit();
+        } else {
+            // Memberikan pesan error yang jelas jika query database mengalami masalah
+            die("Gagal menyimpan gambar ke database Laragon: " . mysqli_error($koneksi));
         }
     }
 }

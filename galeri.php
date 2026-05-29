@@ -1,6 +1,9 @@
 <?php 
 // Menyisipkan file header untuk bagian navigasi atas dan meta data
 include 'includes/header.php'; 
+
+// 1. Menyisipkan file koneksi database Laragon pusat
+include 'includes/koneksi.php'; 
 ?>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -98,45 +101,56 @@ include 'includes/header.php';
 
     <div class="row">
         <?php
-        // Menentukan folder tempat penyimpanan foto
-        $dir = "uploads/";
-        // Membuat folder jika belum ada secara otomatis
-        if (!is_dir($dir)) { mkdir($dir, 0777, true); }
+        // 2. Query data dari database db_photobooth, diurutkan berdasarkan id_user DESC (Terbaru di atas)
+        $query  = "SELECT id_user, nama_user, file_gambar, tema, created_at FROM photos ORDER BY id_user DESC";
+        $result = mysqli_query($koneksi, $query);
 
-        // Mengambil semua file gambar dengan ekstensi .png dalam folder uploads
-        $images = glob($dir . "*.png");
-        
-        if ($images) {
-            /** * PERBAIKAN ERROR: 
-             * Kita memisahkan pengambilan waktu modifikasi file (filemtime) ke dalam array terpisah.
-             * Hal ini dilakukan untuk menghilangkan peringatan error di VS Code dan membuat sorting lebih stabil.
-             */
-            $timestamps = array_map('filemtime', $images); 
-
-            // Melakukan pengurutan: Foto terbaru akan berada di posisi paling atas/depan (SORT_DESC)
-            array_multisort($timestamps, SORT_DESC, $images);
-
-            // Melakukan perulangan untuk setiap file gambar yang ditemukan
-            foreach ($images as $image) {
-                $fileName = basename($image); // Mendapatkan nama file saja tanpa path folder
-                $uploadTime = date("d M Y | H:i", filemtime($image)); // Mengonversi waktu upload ke format tanggal yang mudah dibaca
+        if ($result && mysqli_num_rows($result) > 0) {
+            
+            // Melakukan perulangan untuk setiap baris data gambar yang ditemukan di database
+            while ($row = mysqli_fetch_assoc($result)) {
+                
+                $idUser     = $row['id_user'];
+                $namaUser   = $row['nama_user'];
+                $temaFoto   = $row['tema'];
+                
+                // Mengonversi waktu simpan database ke format tanggal yang mudah dibaca bos
+                $uploadTime = date("d M Y | H:i", strtotime($row['created_at'])); 
+                
+                // --- STRATEGI MERENDER GAMBAR DARI BINER LONGBLOB KE BASE64 DATA URI ---
+                $binerGambar  = $row['file_gambar'];
+                $base64Gambar = base64_encode($binerGambar);
+                $srcGambar    = 'data:image/png;base64,' . $base64Gambar;
+                // ----------------------------------------------------------------------
+                
+                // Membuat nama file unduhan dinamis berdasarkan nama user dan tema
+                $downloadName = "PinkyPromise_" . str_replace(' ', '_', $namaUser) . "_" . date("Ymd_His", strtotime($row['created_at'])) . ".png";
                 ?>
                 <div class="col-lg-3 col-md-4 col-sm-6 mb-4 animate__animated animate__zoomIn">
                     <div class="card card-romantis shadow-sm">
                         
-                        <div class="btn-delete" onclick="konfirmasiHapus('<?= $fileName ?>')" title="Hapus Foto">
+                        <div class="btn-delete" onclick="konfirmasiHapus('<?= $idUser ?>')" title="Hapus Foto">
                             <i class="fas fa-trash-alt"></i>
                         </div>
 
                         <div class="img-container">
-                            <img src="<?php echo $image; ?>" class="img-strip" alt="Pinky Strip">
+                            <img src="<?php echo $srcGambar; ?>" class="img-strip" alt="Pinky Strip">
                         </div>
                         
                         <div class="card-body bg-white text-center p-3">
+                            <h6 class="fw-bold text-dark mb-1 text-truncate" title="<?php echo htmlspecialchars($namaUser); ?>">
+                                <i class="fas fa-user me-1" style="color: #db7093;"></i> <?php echo htmlspecialchars($namaUser); ?>
+                            </h6>
+                            
+                            <span class="badge mb-2 text-muted" style="font-size: 0.75rem; border: 1px solid #eee;">
+                                <?php echo htmlspecialchars($temaFoto); ?>
+                            </span>
+
                             <small class="text-pink fw-bold d-block mb-2" style="color: #db7093;">
                                 <i class="far fa-calendar-alt"></i> <?php echo $uploadTime; ?>
                             </small>
-                            <a href="<?php echo $image; ?>" download class="btn btn-outline-pink btn-sm w-100 rounded-pill fw-bold">
+                            
+                            <a href="<?php echo $srcGambar; ?>" download="<?php echo $downloadName; ?>" class="btn btn-outline-pink btn-sm w-100 rounded-pill fw-bold">
                                 Simpan Foto 💖
                             </a>
                         </div>
@@ -145,21 +159,24 @@ include 'includes/header.php';
                 <?php
             }
         } else {
-            // Tampilan jika folder uploads masih kosong atau tidak ada file .png
+            // Tampilan jika tabel database masih kosong murni
             echo '<div class="col-12 text-center py-5"><h3>Oops! Galeri masih kosong.</h3></div>';
         }
+        
+        // Menutup koneksi database yang sudah dibuka
+        mysqli_close($koneksi);
         ?>
     </div>
 </div>
 
 <script>
     /**
-     * Fungsi konfirmasiHapus: Menampilkan popup peringatan sebelum benar-benar menghapus file
+     * Fungsi konfirmasiHapus: Menampilkan popup peringatan sebelum benar-benar menghapus data
      */
-    function konfirmasiHapus(fileName) {
+    function konfirmasiHapus(idUser) {
         Swal.fire({
             title: 'Hapus Foto?',
-            text: "Kenangan ini akan hilang selamanya, bos!",
+            text: "Kenangan ini akan hilang selamanya dari database, bos!",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#db7093', // Warna tombol konfirmasi disesuaikan dengan tema pink
@@ -169,8 +186,8 @@ include 'includes/header.php';
             borderRadius: '20px'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Jika user klik Ya, arahkan browser ke file penghapus dengan parameter nama file
-                window.location.href = 'hapus-foto.php?file=' + fileName;
+                // Mengarahkan browser ke file penghapus dengan parameter id_user dari database
+                window.location.href = 'hapus-foto.php?id=' + idUser;
             }
         })
     }
@@ -182,7 +199,7 @@ include 'includes/header.php';
     if (urlParams.get('status') === 'deleted') {
         Swal.fire({
             title: 'Terhapus!',
-            text: 'Foto telah berhasil dihapus dari galeri.',
+            text: 'Foto telah berhasil dihapus dari database.',
             icon: 'success',
             confirmButtonColor: '#db7093'
         });

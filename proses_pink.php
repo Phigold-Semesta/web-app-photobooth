@@ -5,8 +5,14 @@
  * mengonversinya, dan menyimpannya ke dalam server dengan identitas tema Soft Pink.
  */
 
+// Menyisipkan file koneksi database Laragon pusat untuk menyimpan data biner gambar
+include 'includes/koneksi.php';
+
 // Mengecek apakah data gambar (image_data) telah dikirimkan melalui metode POST dari form kamera
 if (isset($_POST['image_data'])) {
+    
+    // Menangkap nama tamu dari form input, disanitasi agar aman dari SQL Injection
+    $nama_user = isset($_POST['nama_tamu']) ? mysqli_real_escape_string($koneksi, $_POST['nama_tamu']) : 'User Misterius';
     
     // Mengambil string data gambar dalam format Base64 yang dikirimkan oleh sistem JavaScript
     $img = $_POST['image_data'];
@@ -30,15 +36,6 @@ if (isset($_POST['image_data'])) {
     if ($source !== false) {
         
         /**
-         * Menentukan nama file unik dengan awalan 'Strip_Pink_' ditambah tanggal dan waktu saat ini.
-         * Contoh hasil: Strip_Pink_20260514_150530.png
-         */
-        $filename = "Strip_Pink_" . date("Ymd_His") . ".png";
-        
-        // Menetapkan jalur lokasi penyimpanan file ke dalam direktori folder 'uploads/'
-        $filepath = "uploads/" . $filename;
-
-        /**
          * imagealphablending: Mengaktifkan mode pencampuran warna. 
          * Sangat penting agar warna pink yang lembut dan elemen transparan menyatu secara akurat.
          */
@@ -51,12 +48,31 @@ if (isset($_POST['image_data'])) {
         imagesavealpha($source, true);
 
         /**
-         * Mengeksekusi perintah untuk menuliskan/menyimpan data gambar dari memori ke file fisik di server.
-         * Jika proses penyimpanan ke folder 'uploads/' berhasil, maka instruksi di dalam IF akan dijalankan.
+         * PERBAIKAN & PENYESUAIAN DIREK DATABASE:
+         * Menggunakan output buffering untuk menangkap data biner gambar langsung dari memori 
+         * tanpa harus membuat atau menulis file fisik ke dalam folder uploads/ lagi.
          */
-        if (imagepng($source, $filepath)) {
-            
+        ob_start(); // Membuka buffer memori internal system
+        imagepng($source); // Mengalirkan data gambar PNG ke dalam buffer memori
+        $gambar_biner = ob_get_clean(); // Mengambil isi biner gambar dari buffer lalu membersihkannya
+        
+        // Mengamankan data biner mentah gambar agar siap dimasukkan ke dalam query SQL
+        $gambar_aman = mysqli_real_escape_string($koneksi, $gambar_biner);
+        
+        // Menentukan nama tema yang digunakan secara konsisten
+        $tema = "Soft Pink";
 
+        /**
+         * Query INSERT digunakan untuk menjebloskan data user beserta fisik gambar murni (LONGBLOB) 
+         * secara langsung ke tabel 'photos' di database db_photobooth Laragon.
+         */
+        $query = "INSERT INTO photos (nama_user, file_gambar, tema) VALUES ('$nama_user', '$gambar_aman', '$tema')";
+
+        // Memastikan query sql berhasil dieksekusi ke database Laragon
+        if (mysqli_query($koneksi, $query)) {
+            
+            // Menghapus resource gambar dari memori RAM server agar menghemat resource laptop bos
+            imagedestroy($source);
             
             /**
              * Mengalihkan halaman kembali ke galeri.php dengan membawa informasi status sukses.
@@ -66,6 +82,9 @@ if (isset($_POST['image_data'])) {
             
             // Mengakhiri seluruh proses script untuk memastikan pengalihan halaman (redirect) segera dieksekusi
             exit();
+        } else {
+            // Memberikan pesan error yang jelas jika query database mengalami masalah
+            die("Gagal menyimpan gambar ke database Laragon: " . mysqli_error($koneksi));
         }
     }
 }

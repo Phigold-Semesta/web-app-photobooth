@@ -72,13 +72,22 @@ if ($filter_pilihan == 'vintage') {
         transition: all 0.5s ease; 
     }
 
-    /* Warna bingkai dinamis */
+    /* Warna bingkai dinamis dan harmonisasi skema warna elemen visual */
     <?php if($filter_pilihan == 'soft'): ?>
         .frame-overlay { border-color: rgba(255, 192, 203, 0.6); }
+        .brand-title, .text-status-custom { color: #db7093; }
+        .preview-box { border: 2px dashed #db7093; color: #db7093; }
+        .btn-capture { background: linear-gradient(45deg, #db7093, #ffb6c1); }
     <?php elseif($filter_pilihan == 'vintage'): ?>
         .frame-overlay { border-color: rgba(173, 216, 230, 0.6); }
+        .brand-title, .text-status-custom { color: #4682B4; }
+        .preview-box { border: 2px dashed #4682B4; color: #4682B4; }
+        .btn-capture { background: linear-gradient(45deg, #4682B4, #B0C4DE); }
     <?php elseif($filter_pilihan == 'mahogany'): ?>
         .frame-overlay { border-color: rgba(78, 42, 30, 0.6); }
+        .brand-title, .text-status-custom { color: #4E2A1E; }
+        .preview-box { border: 2px dashed #4E2A1E; color: #4E2A1E; }
+        .btn-capture { background: linear-gradient(45deg, #4E2A1E, #8B5A2B); }
     <?php endif; ?>
 
     /* 4. PREVIEW BOX: Proporsional terhadap VH */
@@ -95,17 +104,14 @@ if ($filter_pilihan == 'vintage') {
         aspect-ratio: 4 / 3;
         background: #fdfcfb; 
         border-radius: 12px; 
-        border: 2px dashed #db7093; 
         display: flex; 
         align-items: center; 
         justify-content: center; 
-        color: #db7093; 
     }
 
     /* 5. TYPOGRAPHY */
     .brand-title {
         font-family: 'Playball', cursive;
-        color: #db7093;
         font-size: clamp(1.5rem, 6vh, 3.5rem); 
     }
 
@@ -113,7 +119,6 @@ if ($filter_pilihan == 'vintage') {
     .btn-capture { 
         width: 100%;
         max-width: 300px;
-        background: linear-gradient(45deg, #db7093, #ffb6c1); 
         color: white; 
         border: none; 
         font-weight: bold; 
@@ -138,7 +143,7 @@ if ($filter_pilihan == 'vintage') {
             <p class="text-muted text-uppercase small fw-bold mb-2" style="letter-spacing: 2px;">Professional Digital Photobooth</p>
 
             <div class="mb-2">
-                <h5 class="fw-bold" style="color: #4E2A1E;">Ready to Shine, <span style="color: #db7093;"><?= htmlspecialchars($nama_tamu) ?></span>? ✨</h5>
+                <h5 class="fw-bold" style="color: #4E2A1E;">Ready to Shine, <span class="text-status-custom"><?= htmlspecialchars($nama_tamu) ?></span>? ✨</h5>
             </div>
             
             <div class="video-wrapper">
@@ -155,10 +160,11 @@ if ($filter_pilihan == 'vintage') {
             </div>
 
             <form id="photo-form" action="<?= $target_proses ?>" method="POST">
+                <input type="hidden" name="nama_tamu" value="<?= htmlspecialchars($nama_tamu) ?>">
                 <input type="hidden" name="image_data" id="image_data">
                 <input type="hidden" id="filter_used" name="filter_used" value="<?= $filter_pilihan ?>">
                 
-                <p id="status-text" class="fw-bold mb-2 animate__animated animate__pulse animate__infinite" style="color: #db7093; display:none;">Siap-siap...</p>
+                <p id="status-text" class="fw-bold mb-2 animate__animated animate__pulse animate__infinite text-status-custom" style="display:none;">Siap-siap...</p>
 
                 <button type="button" id="snap" class="btn btn-capture shadow">
                     AMBIL FOTO SEKARANG <i class="fas fa-magic ms-2"></i>
