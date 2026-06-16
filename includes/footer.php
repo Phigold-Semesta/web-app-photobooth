@@ -14,7 +14,7 @@
                 
                 <div class="developer-info mb-4">
                     <span class="text-muted small d-block mb-2">Developed by</span> <span class="badge rounded-pill px-4 py-2 shadow-sm" style="background: #db7093; color: white; font-weight: 500; letter-spacing: 0.5px;">
-                        Nazwatul Ma'wa </span>
+                        Kelompok 3</span>
                 </div>
                 
                 <div class="opacity-50 mt-3">

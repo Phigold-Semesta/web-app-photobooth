@@ -101,8 +101,15 @@ include 'includes/koneksi.php';
 
     <div class="row">
         <?php
-        // 2. Query data dari database db_photobooth, diurutkan berdasarkan id_user DESC (Terbaru di atas)
-        $query  = "SELECT id_user, nama_user, file_gambar, tema, created_at FROM photos ORDER BY id_user DESC";
+        /**
+         * PERBAIKAN & PENYESUAIAN QUERY RELASIONAL (INNER JOIN):
+         * Menghubungkan tabel photos dengan tabel frames berdasarkan foreign key id_frame.
+         * Mengambil nama_frame dari tabel master frames untuk dijadikan nama tema dinamis.
+         */
+        $query  = "SELECT p.id_user, p.nama_user, p.file_gambar, p.created_at, f.nama_frame 
+                   FROM photos p 
+                   INNER JOIN frames f ON p.id_frame = f.id_frame 
+                   ORDER BY p.id_user DESC";
         $result = mysqli_query($koneksi, $query);
 
         if ($result && mysqli_num_rows($result) > 0) {
@@ -112,7 +119,7 @@ include 'includes/koneksi.php';
                 
                 $idUser     = $row['id_user'];
                 $namaUser   = $row['nama_user'];
-                $temaFoto   = $row['tema'];
+                $temaFoto   = $row['nama_frame']; // Sekarang mengambil data nama_frame hasil INNER JOIN
                 
                 // Mengonversi waktu simpan database ke format tanggal yang mudah dibaca bos
                 $uploadTime = date("d M Y | H:i", strtotime($row['created_at'])); 
