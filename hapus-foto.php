@@ -20,8 +20,9 @@ if (isset($_GET['id'])) {
     /**
      * Melakukan validasi mengecek apakah data yang diminta memang benar-benar ada di database.
      * Ini mencegah error sistem jika mencoba menghapus data yang sudah tidak ada.
+     * KUNCI PERBAIKAN: Mengubah 'id_user' menjadi 'id_photo' agar sesuai dengan struktur kolom tabel photos Anda.
      */
-    $checkQuery = "SELECT id_user FROM photos WHERE id_user = '$idUser'";
+    $checkQuery = "SELECT id_photo FROM photos WHERE id_photo = '$idUser'";
     $checkResult = mysqli_query($koneksi, $checkQuery);
 
     if ($checkResult && mysqli_num_rows($checkResult) > 0) {
@@ -29,8 +30,9 @@ if (isset($_GET['id'])) {
         /**
          * Perintah DELETE FROM adalah fungsi bawaan SQL untuk menghapus baris data secara permanen dari sistem penyimpanan tabel database.
          * Jika proses penghapusan berhasil, maka blok kode di bawahnya akan dijalankan.
+         * KUNCI PERBAIKAN: Mengubah 'id_user' menjadi 'id_photo' agar eksekusi penghapusan tepat sasaran ke baris fotonya.
          */
-        $queryDelete = "DELETE FROM photos WHERE id_user = '$idUser'";
+        $queryDelete = "DELETE FROM photos WHERE id_photo = '$idUser'";
         
         if (mysqli_query($koneksi, $queryDelete)) {
             

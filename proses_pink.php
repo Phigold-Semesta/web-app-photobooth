@@ -11,8 +11,8 @@ include 'includes/koneksi.php';
 // Mengecek apakah data gambar (image_data) telah dikirimkan melalui metode POST dari form kamera
 if (isset($_POST['image_data'])) {
     
-    // Menangkap nama tamu dari form input, disanitasi agar aman dari SQL Injection
-    $nama_user = isset($_POST['nama_tamu']) ? mysqli_real_escape_string($koneksi, $_POST['nama_tamu']) : 'User Misterius';
+    // KUNCI PERBAIKAN: Menangkap nama tamu menggunakan indeks 'nama_guest' agar selaras dengan form HTML terbaru
+    $nama_user = isset($_POST['nama_guest']) ? mysqli_real_escape_string($koneksi, $_POST['nama_guest']) : 'User Misterius';
     
     // Mengambil string data gambar dalam format Base64 yang dikirimkan oleh sistem JavaScript
     $img = $_POST['image_data'];
@@ -102,32 +102,56 @@ if (isset($_POST['image_data'])) {
         // Mengamankan data biner mentah gambar agar siap dimasukkan ke dalam query SQL
         $gambar_aman = mysqli_real_escape_string($koneksi, $gambar_biner);
 
-        /**
-         * Query INSERT digunakan untuk menjebloskan data user beserta fisik gambar murni (LONGBLOB) 
-         * secara langsung ke tabel 'photos' di database db_photobooth Laragon.
-         * Perubahan Kolom: Kolom 'tema' lama diganti menjadi foreign key 'id_frame'.
-         */
-        $query = "INSERT INTO photos (nama_user, file_gambar, id_frame) VALUES ('$nama_user', '$gambar_aman', '$id_frame')";
-
-        // Memastikan query sql berhasil dieksekusi ke database Laragon
-        if (mysqli_query($koneksi, $query)) {
-            
-            // Menghapus resource gambar dari memori RAM server agar menghemat resource laptop bos
-            imagedestroy($source);
-            imagedestroy($canvas);
+        // =========================================================================
+        // STRATEGI KUNCI PENYEMPURNAAN RE-RELASIONAL DATABASE (DOUBLE INSERT)
+        // =========================================================================
+        
+        // TAHAP 1: Daftarkan entri identitas ke tabel master 'guests' terlebih dahulu
+        $query_guest = "INSERT INTO guests (nama_guest) VALUES ('$nama_user')";
+        
+        if (mysqli_query($koneksi, $query_guest)) {
+            // Tangkap id_guest yang baru saja digenerate otomatis oleh sistem database
+            $id_guest_baru = mysqli_insert_id($koneksi);
             
             /**
-             * Mengalihkan halaman kembali ke galeri.php dengan membawa informasi status sukses.
-             * Parameter theme=pink digunakan untuk memicu respon visual bertema pink di halaman galeri.
+             * TAHAP 2: PERBAIKAN TOTAL DI SINI!
+             * Menghapus kolom 'nama_user' yang tidak eksis di tabel photos phpMyAdmin Anda.
+             * Query murni mengarah ke kolom asli: id_guest, id_frame, dan file_gambar.
              */
-            header("Location: galeri.php?status=success&theme=pink");
-            
-            // Mengakhiri seluruh proses script untuk memastikan pengalihan halaman (redirect) segera dieksekusi
-            exit();
+            $query_photo = "INSERT INTO photos (id_guest, id_frame, file_gambar) 
+                            VALUES ('$id_guest_baru', '$id_frame', '$gambar_aman')";
+
+            // Memastikan query sql berhasil dieksekusi ke database Laragon
+            if (mysqli_query($koneksi, $query_photo)) {
+                
+                // Menghapus resource gambar dari memori RAM server agar menghemat resource laptop bos
+                imagedestroy($source);
+                imagedestroy($canvas);
+                
+                /**
+                 * KUNCI PENYESUAIAN REDIRECT:
+                 * Menambahkan parameter nama_guest pada pengalihan URL halaman galeri agar estafet 
+                 * nama tamu tetap terjaga sampai akhir sesi pemotretan.
+                 */
+                header("Location: galeri.php?status=success&theme=pink&nama_guest=" . urlencode($nama_user));
+                
+                // Mengakhiri seluruh proses script untuk memastikan pengalihan halaman (redirect) segera dieksekusi
+                exit();
+            } else {
+                // Jika query tabel photos gagal, pastikan RAM dibersihkan sebelum mematikan sistem
+                imagedestroy($source);
+                imagedestroy($canvas);
+                
+                // Memberikan pesan error yang jelas jika query database mengalami masalah
+                die("Gagal menyimpan gambar ke tabel photos: " . mysqli_error($koneksi));
+            }
         } else {
-            // Memberikan pesan error yang jelas jika query database mengalami masalah
-            die("Gagal menyimpan gambar ke database Laragon: " . mysqli_error($koneksi));
+            // Jika proses pendaftaran tamu gagal, bersihkan memori RAM server
+            imagedestroy($source);
+            imagedestroy($canvas);
+            die("Gagal mendaftarkan nama tamu ke tabel guests: " . mysqli_error($koneksi));
         }
+        // =========================================================================
     }
 }
 

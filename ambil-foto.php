@@ -2,17 +2,22 @@
 // Menyisipkan file header yang berisi meta tag, link CSS, dan bagian atas navigasi
 include 'includes/header.php'; 
 
-// Menangkap data nama tamu dari form sebelumnya (index.php) menggunakan metode POST. 
-$nama_tamu = $_POST['nama_tamu'] ?? 'Sweet Guest';
+/**
+ * KUNCI PERBAIKAN SINKRONISASI: 
+ * Menangkap data nama tamu dan filter menggunakan metode GET (sesuai method form di index.php)
+ * serta mengubah kata kunci nama dari 'nama_tamu' menjadi 'nama_guest'.
+ */
+$nama_tamu = $_GET['nama_guest'] ?? 'Sweet Guest';
 
-// Menangkap pilihan filter dari form sebelumnya.
-$filter_pilihan = $_POST['filter'] ?? 'soft';
+// Menangkap pilihan filter dari form beranda (menggunakan name="tema" pada select option index.php)
+$filter_pilihan = $_GET['tema'] ?? 'soft';
 
 // Inisialisasi variabel target proses
 $target_proses = "proses_pink.php"; 
 
-if ($filter_pilihan == 'vintage') {
+if ($filter_pilihan == 'blue' || $filter_pilihan == 'vintage') {
     $target_proses = "proses_biru.php";
+    $filter_pilihan = 'vintage'; // Normalisasi nama filter untuk style CSS di bawah
 } elseif ($filter_pilihan == 'mahogany') { 
     $target_proses = "proses_mahogany.php";
 }
@@ -73,12 +78,12 @@ if ($filter_pilihan == 'vintage') {
     }
 
     /* Warna bingkai dinamis dan harmonisasi skema warna elemen visual */
-    <?php if($filter_pilihan == 'soft'): ?>
+    <?php if($filter_pilihan == 'soft' || $filter_pilihan == 'pink'): ?>
         .frame-overlay { border-color: rgba(255, 192, 203, 0.6); }
         .brand-title, .text-status-custom { color: #db7093; }
         .preview-box { border: 2px dashed #db7093; color: #db7093; }
         .btn-capture { background: linear-gradient(45deg, #db7093, #ffb6c1); }
-    <?php elseif($filter_pilihan == 'vintage'): ?>
+    <?php elseif($filter_pilihan == 'vintage' || $filter_pilihan == 'blue'): ?>
         .frame-overlay { border-color: rgba(173, 216, 230, 0.6); }
         .brand-title, .text-status-custom { color: #4682B4; }
         .preview-box { border: 2px dashed #4682B4; color: #4682B4; }
@@ -160,7 +165,7 @@ if ($filter_pilihan == 'vintage') {
             </div>
 
             <form id="photo-form" action="<?= $target_proses ?>" method="POST">
-                <input type="hidden" name="nama_tamu" value="<?= htmlspecialchars($nama_tamu) ?>">
+                <input type="hidden" name="nama_guest" value="<?= htmlspecialchars($nama_tamu) ?>">
                 <input type="hidden" name="image_data" id="image_data">
                 <input type="hidden" id="filter_used" name="filter_used" value="<?= $filter_pilihan ?>">
                 

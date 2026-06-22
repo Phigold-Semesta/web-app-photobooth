@@ -84,13 +84,13 @@ include 'includes/header.php';
                     <h4 class="fw-light mb-4" style="color: #4E2A1E;">Digital Photobooth 📸</h4>
                     <p class="text-muted mb-4">Abadikan momen serumu dengan sentuhan filter estetik hari ini!</p>
                     
-                    <form action="ambil-foto.php" method="POST" class="animate__animated animate__fadeInUp">
+                    <form action="ambil-foto.php" method="GET" class="animate__animated animate__fadeInUp">
                         
                         <div class="mb-4 text-start">
                             <label class="form-label fw-bold small text-secondary">
                                 <i class="fas fa-smile me-2" style="color: #db7093;"></i>SIAPA NAMAMU?
                             </label>
-                            <input type="text" name="nama_tamu" class="form-control form-control-lg shadow-sm border-0 rounded-pill custom-input" 
+                            <input type="text" name="nama_guest" class="form-control form-control-lg shadow-sm border-0 rounded-pill custom-input" 
                                 style="background: #f8f9fa; padding-left: 20px;"
                                 placeholder="Tulis namamu di sini..." required>
                         </div>
@@ -99,10 +99,10 @@ include 'includes/header.php';
                             <label class="form-label fw-bold small text-secondary">
                                 <i class="fas fa-wand-magic-sparkles me-2" style="color: #db7093;"></i>PILIH NUANSA FAVORIT
                             </label>
-                            <select name="filter" class="form-select form-select-lg shadow-sm border-0 rounded-pill custom-input"
+                            <select name="tema" class="form-select form-select-lg shadow-sm border-0 rounded-pill custom-input"
                                 style="background: #f8f9fa; padding-left: 20px; cursor: pointer;">
-                                <option value="soft">🌸 Soft Pink (Romantic)</option>
-                                <option value="vintage">🧊 Blue Vintage (Cool & Calm)</option>
+                                <option value="pink">🌸 Soft Pink (Romantic)</option>
+                                <option value="blue">🧊 Blue Vintage (Cool & Calm)</option>
                                 <option value="mahogany">🪵 Mahogany Luxury (Bold & Classy)</option>
                             </select>
                         </div>

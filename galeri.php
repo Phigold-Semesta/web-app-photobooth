@@ -1,9 +1,16 @@
 <?php 
-// Menyisipkan file header untuk bagian navigasi atas dan meta data
+// Menyisipkan file header yang berisi meta tag, link CSS, dan bagian atas navigasi
 include 'includes/header.php'; 
 
 // 1. Menyisipkan file koneksi database Laragon pusat
 include 'includes/koneksi.php'; 
+
+/**
+ * KUNCI PERBAIKAN SINKRONISASI:
+ * Menangkap data nama tamu dari parameter URL (setelah redirect dari proses_*.php)
+ * menggunakan metode GET dan mengubah kata kunci nama menjadi 'nama_guest'.
+ */
+$nama_tamu = $_GET['nama_guest'] ?? 'Sweet Guest';
 ?>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -92,9 +99,27 @@ include 'includes/koneksi.php';
             </button>
             <ul class="dropdown-menu dropdown-menu-center animate__animated animate__fadeIn">
                 <li><h6 class="dropdown-header">Pilih Suasana Baru:</h6></li>
-                <li><form action="ambil-foto.php" method="POST"><input type="hidden" name="filter" value="soft"><button type="submit" class="dropdown-item fw-bold text-pink">💖 Sweet Pink</button></form></li>
-                <li><form action="ambil-foto.php" method="POST"><input type="hidden" name="filter" value="vintage"><button type="submit" class="dropdown-item fw-bold text-primary">📸 Vintage Blue</button></form></li>
-                <li><form action="ambil-foto.php" method="POST"><input type="hidden" name="filter" value="mahogany"><button type="submit" class="dropdown-item fw-bold" style="color:#4e2a1e;">✨ Mahogany Luxury</button></form></li>
+                <li>
+                    <form action="ambil-foto.php" method="GET">
+                        <input type="hidden" name="nama_guest" value="<?= htmlspecialchars($nama_tamu) ?>">
+                        <input type="hidden" name="tema" value="soft">
+                        <button type="submit" class="dropdown-item fw-bold text-pink">💖 Sweet Pink</button>
+                    </form>
+                </li>
+                <li>
+                    <form action="ambil-foto.php" method="GET">
+                        <input type="hidden" name="nama_guest" value="<?= htmlspecialchars($nama_tamu) ?>">
+                        <input type="hidden" name="tema" value="vintage">
+                        <button type="submit" class="dropdown-item fw-bold text-primary">📸 Vintage Blue</button>
+                    </form>
+                </li>
+                <li>
+                    <form action="ambil-foto.php" method="GET">
+                        <input type="hidden" name="nama_guest" value="<?= htmlspecialchars($nama_tamu) ?>">
+                        <input type="hidden" name="tema" value="mahogany">
+                        <button type="submit" class="dropdown-item fw-bold" style="color:#4e2a1e;">✨ Mahogany Luxury</button>
+                    </form>
+                </li>
             </ul>
         </div>
     </div>
@@ -103,13 +128,14 @@ include 'includes/koneksi.php';
         <?php
         /**
          * PERBAIKAN & PENYESUAIAN QUERY RELASIONAL (INNER JOIN):
-         * Menghubungkan tabel photos dengan tabel frames berdasarkan foreign key id_frame.
-         * Mengambil nama_frame dari tabel master frames untuk dijadikan nama tema dinamis.
+         * Menghubungkan tabel photos dengan tabel master frames berdasarkan foreign key id_frame.
+         * Catatan: Jika tabel master tamu Anda sudah aktif, Anda bisa mengubah query penjemputan nama 
+         * secara dinamis ke tabel tamu, atau tetap menggunakan fallback nama_tamu dari URL di atas.
          */
-        $query  = "SELECT p.id_user, p.nama_user, p.file_gambar, p.created_at, f.nama_frame 
+        $query  = "SELECT p.id_photo, p.file_gambar, p.created_at, f.nama_frame 
                    FROM photos p 
                    INNER JOIN frames f ON p.id_frame = f.id_frame 
-                   ORDER BY p.id_user DESC";
+                   ORDER BY p.id_photo DESC";
         $result = mysqli_query($koneksi, $query);
 
         if ($result && mysqli_num_rows($result) > 0) {
@@ -117,8 +143,8 @@ include 'includes/koneksi.php';
             // Melakukan perulangan untuk setiap baris data gambar yang ditemukan di database
             while ($row = mysqli_fetch_assoc($result)) {
                 
-                $idUser     = $row['id_user'];
-                $namaUser   = $row['nama_user'];
+                $idPhoto    = $row['id_photo'];
+                $namaUser   = $nama_tamu; // Menampilkan nama tamu aktif sesi ini secara dinamis
                 $temaFoto   = $row['nama_frame']; // Sekarang mengambil data nama_frame hasil INNER JOIN
                 
                 // Mengonversi waktu simpan database ke format tanggal yang mudah dibaca bos
@@ -136,7 +162,7 @@ include 'includes/koneksi.php';
                 <div class="col-lg-3 col-md-4 col-sm-6 mb-4 animate__animated animate__zoomIn">
                     <div class="card card-romantis shadow-sm">
                         
-                        <div class="btn-delete" onclick="konfirmasiHapus('<?= $idUser ?>')" title="Hapus Foto">
+                        <div class="btn-delete" onclick="konfirmasiHapus('<?= $idPhoto ?>')" title="Hapus Foto">
                             <i class="fas fa-trash-alt"></i>
                         </div>
 
@@ -180,7 +206,7 @@ include 'includes/koneksi.php';
     /**
      * Fungsi konfirmasiHapus: Menampilkan popup peringatan sebelum benar-benar menghapus data
      */
-    function konfirmasiHapus(idUser) {
+    function konfirmasiHapus(idPhoto) {
         Swal.fire({
             title: 'Hapus Foto?',
             text: "Kenangan ini akan hilang selamanya dari database, bos!",
@@ -193,16 +219,31 @@ include 'includes/koneksi.php';
             borderRadius: '20px'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Mengarahkan browser ke file penghapus dengan parameter id_user dari database
-                window.location.href = 'hapus-foto.php?id=' + idUser;
+                // Mengarahkan browser ke file penghapus dengan parameter id dari database dan membawa nama tamu kembali
+                window.location.href = 'hapus-foto.php?id=' + idPhoto + '&nama_guest=' + encodeURIComponent('<?= urlencode($nama_tamu) ?>');
             }
         })
     }
 
     /**
-     * Logika Feedback: Mengecek apakah ada parameter 'status=deleted' di URL setelah redirect dari hapus-foto.php
+     * Logika Feedback: Mengecek parameter status di URL setelah redirect dari backend
      */
     const urlParams = new URLSearchParams(window.location.search);
+    
+    // 1. Notifikasi Sukses Menyimpan Gambar
+    if (urlParams.get('status') === 'success') {
+        Swal.fire({
+            title: 'Berhasil Disimpan! ✨',
+            text: 'Momen manismu telah berhasil diabadikan ke dalam database.',
+            icon: 'success',
+            confirmButtonColor: '#db7093'
+        });
+        // Membersihkan parameter status agar notifikasi tidak muncul berulang saat refresh, namun tetap mempertahankan nama_guest
+        const newUrl = window.location.pathname + '?nama_guest=' + urlParams.get('nama_guest');
+        window.history.replaceState({}, document.title, newUrl);
+    }
+    
+    // 2. Notifikasi Sukses Menghapus Gambar
     if (urlParams.get('status') === 'deleted') {
         Swal.fire({
             title: 'Terhapus!',
@@ -210,8 +251,9 @@ include 'includes/koneksi.php';
             icon: 'success',
             confirmButtonColor: '#db7093'
         });
-        // Membersihkan URL agar pesan sukses tidak muncul berulang kali saat halaman di-refresh
-        window.history.replaceState({}, document.title, window.location.pathname);
+        // Membersihkan parameter status agar notifikasi tidak muncul berulang saat refresh, namun tetap mempertahankan nama_guest
+        const newUrl = window.location.pathname + '?nama_guest=' + urlParams.get('nama_guest');
+        window.history.replaceState({}, document.title, newUrl);
     }
 </script>
 
