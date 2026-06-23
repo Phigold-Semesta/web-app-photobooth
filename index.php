@@ -1,5 +1,6 @@
 <?php 
 // Menyisipkan file header yang berisi struktur pembuka HTML, meta tag, dan navigasi atas
+include 'includes/koneksi.php'; // Menyertakan koneksi agar bisa memanggil tabel frames secara otomatis
 include 'includes/header.php'; 
 ?>
 
@@ -99,11 +100,39 @@ include 'includes/header.php';
                             <label class="form-label fw-bold small text-secondary">
                                 <i class="fas fa-wand-magic-sparkles me-2" style="color: #db7093;"></i>PILIH NUANSA FAVORIT
                             </label>
+                            
                             <select name="tema" class="form-select form-select-lg shadow-sm border-0 rounded-pill custom-input"
-                                style="background: #f8f9fa; padding-left: 20px; cursor: pointer;">
-                                <option value="pink">🌸 Soft Pink (Romantic)</option>
-                                <option value="blue">🧊 Blue Vintage (Cool & Calm)</option>
-                                <option value="mahogany">🪵 Mahogany Luxury (Bold & Classy)</option>
+                                style="background: #f8f9fa; padding-left: 20px; cursor: pointer;" required>
+                                <option value="" disabled selected>-- Pilih Tema Otomatis --</option>
+                                <?php
+                                // Mengambil data master bingkai/tema langsung dari tabel database 'frames' secara dinamis
+                                $query_get_frames = "SELECT * FROM frames ORDER BY id_frame ASC";
+                                $result_frames = mysqli_query($koneksi, $query_get_frames);
+
+                                if ($result_frames && mysqli_num_rows($result_frames) > 0) {
+                                    while ($row = mysqli_fetch_assoc($result_frames)) {
+                                        // Menentukan value parameter string berdasarkan id_frame agar selaras dengan file proses backend
+                                        $slug_tema = 'pink';
+                                        $emoji = '🌸';
+                                        
+                                        if ($row['id_frame'] == 2) {
+                                            $slug_tema = 'blue';
+                                            $emoji = '🧊';
+                                        } elseif ($row['id_frame'] == 3) {
+                                            $slug_tema = 'mahogany';
+                                            $emoji = '🪵';
+                                        }
+
+                                        // Menampilkan opsi secara otomatis berdasarkan records baris database master
+                                        echo '<option value="' . $slug_tema . '">' . $emoji . ' ' . htmlspecialchars($row['nama_frame']) . '</option>';
+                                    }
+                                } else {
+                                    // Fallback cadangan jika tabel master database dalam keadaan kosong
+                                    echo '<option value="pink">🌸 Soft Pink (Romantic)</option>';
+                                    echo '<option value="blue">🧊 Blue Vintage (Cool & Calm)</option>';
+                                    echo '<option value="mahogany">🪵 Mahogany Luxury (Bold & Classy)</option>';
+                                }
+                                ?>
                             </select>
                         </div>
                         
